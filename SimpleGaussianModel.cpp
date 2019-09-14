@@ -2,14 +2,18 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <typeinfo>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 using namespace cv;
 using namespace std;
 
 class SimpleGaussian{
-
+private:
+	string SAVE_DIR;
 public:
-	SimpleGaussian(){};
+	SimpleGaussian(string SAVE_DIR): SAVE_DIR(SAVE_DIR) {};
 
 	pair <Mat, Mat> initialize_param(vector<vector<int> > data)
 	{
@@ -61,6 +65,18 @@ public:
 		return make_pair(pos_face, pos_nonface);
 	}
 
+	void save_images(Mat mean_face, Mat covar_face, Mat mean_nonface, Mat covar_nonface){
+		int check;
+		char* SUB_DIR = "SimpleGaussianResults";
+		check = mkdir(SUB_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+		imwrite(SAVE_DIR + SUB_DIR + "/mean_face.jpg", mean_face);
+		imwrite(SAVE_DIR + SUB_DIR + "/covar_face.jpg", covar_face);
+
+		imwrite(SAVE_DIR + SUB_DIR + "/mean_nonface.jpg", mean_nonface);
+		imwrite(SAVE_DIR + SUB_DIR + "/covar_nonface.jpg", covar_nonface);
+	}
+
 	void train(vector<vector<int> > train_face,
 			vector<vector<int> >train_nonface,
 			vector<vector<int> >test_face,
@@ -69,13 +85,11 @@ public:
 		pair<Mat, Mat> p_face = initialize_param(train_face);
 		cv::Mat mean_face = p_face.first;
 		cv::Mat covar_face = p_face.second;
-		imwrite("/home/arshita/workspace/FaceClassification/mean_face.jpg", mean_face);
-		imwrite("/home/arshita/workspace/FaceClassification/covar_face.jpg", covar_face);
 		pair<Mat, Mat> p_nonface = initialize_param(train_nonface);
 		cv::Mat mean_nonface = p_nonface.first;
 		cv::Mat covar_nonface = p_nonface.second;
-		imwrite("/home/arshita/workspace/FaceClassification/mean_nonface.jpg", mean_nonface);
-		imwrite("/home/arshita/workspace/FaceClassification/covar_nonface.jpg", covar_nonface);
+
+		save_images(mean_face, covar_face, mean_nonface, covar_nonface);
 
 		vector<float>logpdf_face_wrt_face, logpdf_face_wrt_nonface, logpdf_nonface_wrt_face, logpdf_nonface_wrt_nonface ;
 		logpdf_face_wrt_face = calNorm(test_face, mean_face, covar_face);
@@ -107,18 +121,3 @@ public:
 		cout<<"False Negative Rate: "<< (count_false_negative)/(pos_testface_face.size())<<endl;
 	}
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

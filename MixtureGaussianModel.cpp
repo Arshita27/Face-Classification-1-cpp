@@ -5,6 +5,9 @@
 #include "boost/tuple/tuple.hpp"
 #include <string>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 using namespace cv;
 using namespace std;
 
@@ -12,9 +15,12 @@ using namespace std;
 class MixtureGaussian{
 
 private:
+	string SAVE_DIR;
 	int n_clusters;
+	int n_iterations;
 public:
-	MixtureGaussian(int N_clusters): n_clusters(N_clusters){}
+	MixtureGaussian(string SAVE_DIR, int N_clusters, int N_iterations):
+		 SAVE_DIR(SAVE_DIR), n_clusters(N_clusters), n_iterations(N_iterations){}
 
 	pair<Mat, Mat> initialize_params()
 	{
@@ -203,22 +209,28 @@ public:
 		return make_pair(pos_face, pos_nonface);
 	}
 
-	void save_mean_images(Mat all_means, int class_name){
+	void save_mean_images(Mat all_means_face, Mat all_means_nonface){
+		int check;
+		char* SUB_DIR = "MixtureGaussianResults";
+		check = mkdir(SUB_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 		for (int i=0; i<n_clusters; i++){
-			Mat mean_face_cl = all_means.row(i);
+			Mat mean_face_cl = all_means_face.row(i);
 			mean_face_cl.convertTo(mean_face_cl, CV_8UC1);
 			mean_face_cl=mean_face_cl.reshape(1,10);
-			string name;
-			if (class_name==0){
-				name = "/home/arshita/workspace/FaceClassification/mean_face_cl_";
-			}
-			else
-				name = "/home/arshita/workspace/FaceClassification/mean_nonface_cl_";
+
+			string name_face  = SAVE_DIR + SUB_DIR + "/mean_face_cl";
+			string name_nonface = SAVE_DIR + SUB_DIR + "/mean_nonface_cl";
+
 			stringstream ss;
 			ss<<i;
-			name = name+ ss.str();
-			name+=".png";
-			imwrite(name, mean_face_cl);
+
+			name_face += ss.str();
+			name_nonface += ss.str();
+
+			name_face+=".png";
+			name_nonface+=".png";
+			imwrite(name_face, mean_face_cl);
+			imwrite(name_nonface, mean_face_cl);
 		}
 	}
 
@@ -239,8 +251,7 @@ public:
 		Mat covar_nonface = init_nonface.second;
 
 		std::cout<<"Parameters initialized"<<endl;
-		int iterations = 5;
-		for (int i=0; i<iterations; i++){
+		for (int i=0; i<n_iterations; i++){
 			std::cout<<"\niteration no: "<<i<<endl;
 
 			// ******************* face *************************
@@ -278,10 +289,8 @@ public:
 			covar_nonface = new_non_.second;
 			std::cout<<"M-step complete for Non-Face"<<endl;
 		}
-		std::cout<<"\nStart Writing Mean Face Images"<<endl;
-		save_mean_images(mean_face, 0);
-		std::cout<<"\nStart Writing Mean Non-Face Images"<<endl;
-		save_mean_images(mean_nonface, 1);
+		std::cout<<"\nStart Writing Mean Face and Mean NonFace Images"<<endl;
+		save_mean_images(mean_face, mean_nonface);
 		std::cout<<"\nAll 'mean' Images written"<<endl;
 
 		cv::Mat logpdf_face_wrt_face = calNorm(test_face, lambda, mean_face, covar_face);
