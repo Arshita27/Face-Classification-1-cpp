@@ -1,8 +1,8 @@
-#include <time.h>
-#include <iostream>
+#include <string>
+#include <vector>
 
-#include "SimpleGaussianModel.cpp"
-#include "MixtureGaussianModel.cpp"
+#include "models/MixtureGaussianModel.cpp"
+#include "models/SimpleGaussianModel.cpp"
 #include "utils.h"
 
 using namespace cv;
@@ -15,7 +15,7 @@ int main(){
 	// SAVE_DIR: set directory where mean (calculated) images should be saved.
 	string SAVE_DIR = "";
 	// Model: set Model name that needs to be implemented.
-	string Model = "Mixture of Gaussian";
+	string Model = "Simple Gaussian";
 
 	vector<vector<int> > train_face, train_nonface, test_face, test_nonface;
 	vector<string> FULL_PATH = get_image_Path(ROOT_DIR);
