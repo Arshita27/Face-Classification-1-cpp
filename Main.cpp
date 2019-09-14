@@ -11,9 +11,9 @@ using namespace std;
 
 int main(){
 	// ROOT DIR: set root directory where Dataset is saved.
-	string ROOT_DIR = "/home/arshita/Desktop/Dataset/";
+	string ROOT_DIR = "";
 	// SAVE_DIR: set directory where mean (calculated) images should be saved.
-	string SAVE_DIR = "/home/arshita/workspace/FaceClassification/";
+	string SAVE_DIR = "";
 	// Model: set Model name that needs to be implemented.
 	string Model = "Mixture of Gaussian";
 
